@@ -108,3 +108,38 @@ The OpenLDAP service account is used for all searches. Rancher users will see us
 1. Under **User and Group Search**, check **Configure an OpenLDAP server**
 
 If you experience issues when you test the connection to the OpenLDAP server, ensure that you entered the credentials for the service account and configured the search base correctly. Inspecting the Rancher logs can help pinpoint the root cause. Debug logs may contain more detailed information about the error. Please refer to [How can I enable debug logging](../../../../faq/technical-items.md#how-can-i-enable-debug-logging) for more information.
+
+## Troubleshooting
+
+If you are experiencing issues while testing the connection to the Okta server, first double-check the configuration options of your SAML application. You may also inspect the Rancher logs to help pinpoint the problem cause. Debug logs may contain more detailed information about the error. Please refer to [How can I enable debug logging](../../../../faq/technical-items.md#how-can-i-enable-debug-logging) in this documentation.
+
+### You are not redirected to Okta
+
+When you click **Enable**, you are not redirected to the Okta login page.
+
+  * Verify your Okta application configuration.
+  * Make sure the `Single Sign on URL` and `Audience URI` settings are correctly configured in Okta.
+  * Check your browser's popup blocker settings.
+
+### Forbidden message displayed after IdP login
+
+You are correctly redirected to the Okta login page and you can enter your credentials, but you receive a `Forbidden` message afterwards.
+
+  * Check the Rancher debug log.
+  * If the log displays `ERROR: either the Response or Assertion must be signed`, make sure that your Okta application is configured to sign SAML responses or assertions.
+
+### Certificate verification error
+
+If you see an error message in the Rancher logs such as `cannot validate signature on Response: Could not verify certificate against trusted certs`, this may be related to the IdP metadata configuration.
+
+This error can occur when:
+
+  * The IdP metadata XML contains multiple signing certificates (for example, during certificate rollover).
+  * The signing certificate in the metadata doesn't match the certificate used to sign the SAML response.
+
+To resolve this issue:
+
+  * Ensure that the certificate in your Okta IdP metadata XML is the correct active signing certificate.
+  * If your Okta configuration has multiple certificates (for example, due to certificate rollover), try updating the metadata XML to contain only the current active signing certificate.
+  * Verify that the certificate hasn't expired.
+  * If you are using Rancher versions prior to v2.11, consider upgrading to v2.11 or later, which includes improved handling for multiple certificates in IdP metadata.
